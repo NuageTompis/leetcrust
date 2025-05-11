@@ -1,30 +1,30 @@
 use crate::args::{FetchCommand, FetchSubcommand};
+use crate::reverse_engineer::fetch_metadata;
 use serde::{Deserialize, Serialize};
-
 pub const PROBLEM_LIST_URL: &str = "https://leetcode.com/api/problems/algorithms/";
 
 // todo: find a way to refactor this
 #[derive(Debug, Deserialize, Serialize)]
-struct Json1 {
-    data: Json2,
+pub struct Json1 {
+    pub data: Json2,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Json2 {
-    question: Json3,
+pub struct Json2 {
+    pub question: Json3,
 }
 #[derive(Debug, Deserialize, Serialize)]
-struct Json3 {
+pub struct Json3 {
     #[serde(rename = "codeDefinition")]
-    code_definition: String,
+    pub code_definition: String,
     #[serde(rename = "metaData")]
-    meta_data: String,
+    pub meta_data: String,
 }
 #[derive(Debug, Deserialize, Serialize)]
-struct Json4 {
+pub struct Json4 {
     #[serde(rename = "defaultCode")]
-    default_code: String,
-    value: String,
+    pub default_code: String,
+    pub value: String,
 }
 // and this
 #[derive(Debug, Deserialize, Serialize)]
@@ -45,7 +45,7 @@ struct Json3Bis {
 
 const QUERY_QUESTION_DATA: &str = "query questionData($titleSlug: String!) { question(titleSlug: $titleSlug) { codeDefinition metaData }}";
 const QUERY_EXAMPLE_TESTCASES: &str = "query selectProblem($titleSlug: String!) { question(titleSlug: $titleSlug) { exampleTestcases }}";
-const GRAPHQL_URL: &str = "https://leetcode.com/graphql";
+pub const GRAPHQL_URL: &str = "https://leetcode.com/graphql";
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Variables {
@@ -60,19 +60,19 @@ impl Variables {
     }
 }
 #[derive(Debug, Serialize, Deserialize)]
-struct ExampleTestcasesQueryBody {
+pub struct ExampleTestcasesQueryBody {
     variables: Variables,
     query: String,
 }
 #[derive(Debug, Serialize, Deserialize)]
-struct QuestionDataQueryBody {
+pub struct QuestionDataQueryBody {
     #[serde(rename = "operationName")]
     operation_name: String,
     variables: Variables,
     query: String,
 }
 impl QuestionDataQueryBody {
-    fn new(title_slug: &str) -> Self {
+    pub fn new(title_slug: &str) -> Self {
         QuestionDataQueryBody {
             operation_name: "questionData".into(),
             variables: Variables::new(title_slug),
@@ -81,7 +81,7 @@ impl QuestionDataQueryBody {
     }
 }
 impl ExampleTestcasesQueryBody {
-    fn new(title_slug: &str) -> Self {
+    pub fn new(title_slug: &str) -> Self {
         ExampleTestcasesQueryBody {
             variables: Variables::new(title_slug),
             query: QUERY_EXAMPLE_TESTCASES.into(),
@@ -89,13 +89,16 @@ impl ExampleTestcasesQueryBody {
     }
 }
 
-pub fn handle_fetch_command(fetch: FetchCommand) {
+pub async fn handle_fetch_command(fetch: FetchCommand) {
     match fetch.command {
         FetchSubcommand::Slugs => {
             println!("This command is not implemented yet");
         }
         FetchSubcommand::Unimplemented => {
             println!("This command is not implemented yet");
+        }
+        FetchSubcommand::Metadata(metadata_command) => {
+            fetch_metadata::handle_fetch_metadata_command(metadata_command.target).await;
         }
     }
 }
@@ -208,6 +211,9 @@ mod tests_fetch {
     async fn test_fetch_example_testcases() {
         let problem_slug = "find-a-corresponding-node-of-a-binary-tree-in-a-clone-of-that-tree";
         let example_testcases = try_fetch_example_testcases(problem_slug).await;
-        assert_eq!(example_testcases.unwrap(), "[7,4,3,null,null,6,19]\n3\n[7]\n7\n[8,null,6,null,5,null,4,null,3,null,2,null,1]\n4");
+        assert_eq!(
+            example_testcases.unwrap(),
+            "[7,4,3,null,null,6,19]\n3\n[7]\n7\n[8,null,6,null,5,null,4,null,3,null,2,null,1]\n4"
+        );
     }
 }

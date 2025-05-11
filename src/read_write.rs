@@ -5,7 +5,7 @@ use std::{
 };
 
 const ENV_PATH: &str = ".env";
-const SLUGS_PATH: &str = "resources/slugs_and_ids.txt";
+pub const SLUGS_PATH: &str = "resources/slugs_and_ids.txt";
 const SOLUTION_MOD_PATH: &str = "./src/solutions/mod.rs";
 
 /// Possible results of local read (`LocalReadResult`)

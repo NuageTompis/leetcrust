@@ -3,6 +3,7 @@
 .env
 
 /resources/slugs_and_ids.txt
+/resources/metadata
 
 /tests
 /notes

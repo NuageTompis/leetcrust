@@ -19,8 +19,11 @@ pub enum MainCommand {
     /// Fetch something from leetcode's api
     #[clap(alias = "f")]
     Fetch(FetchCommand),
-}
 
+    /// Finds all types defined by leetcode (among the fetched metadata files)
+    #[clap(alias = "t")]
+    FindTypes,
+}
 
 #[derive(Args, Debug)]
 pub struct CreateCommand {
@@ -45,8 +48,17 @@ pub enum FetchSubcommand {
     /// Fetch each problem's id, slug and whether they're premium-only or not
     Slugs,
 
+    /// Fetch problems randomly, keeping only their metadata and storing them in directory resources/metadata
+    Metadata(MetadataCommand),
+
     /// Not implemented yet
-    Unimplemented
+    Unimplemented,
+}
+
+#[derive(Args, Debug)]
+pub struct MetadataCommand {
+    /// The amount of metadata that should be fetched before terminating (including previous calls)
+    pub target: usize,
 }
 
 #[derive(Debug, Subcommand)]
@@ -60,7 +72,7 @@ pub enum ConfigSubcommand {
     /// Tell leetcrust if you are a premium leetcode user (0 or 1)
     /// This will be used for better error-handling
     #[clap(verbatim_doc_comment)]
-    Premium(PremiumCommand)
+    Premium(PremiumCommand),
 }
 
 #[derive(Args, Debug)]
