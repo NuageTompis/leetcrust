@@ -100,7 +100,12 @@ mod tests {
     }
 }"
         .into();
-        assert_eq!(res, Ok(expected));
+
+        if cfg!(windows) {
+            assert_eq!(res.map(|s| s.replace('\r', "")), Ok(expected));
+        } else {
+            assert_eq!(res, Ok(expected));
+        }
     }
 
     #[test]
@@ -131,7 +136,12 @@ mod tests {
     }
 }"
         .into();
-        assert_eq!(res, Ok(expected));
+
+        if cfg!(windows) {
+            assert_eq!(res.map(|s| s.replace('\r', "")), Ok(expected));
+        } else {
+            assert_eq!(res, Ok(expected));
+        }
     }
 
     #[test]
@@ -185,6 +195,11 @@ mod tests {
     }
 }"
         .into();
-        assert_eq!(res, Ok(expected));
+
+        if cfg!(windows) {
+            assert_eq!(res.map(|s| s.replace('\r', "")), Ok(expected));
+        } else {
+            assert_eq!(res, Ok(expected));
+        }
     }
 }
