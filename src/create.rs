@@ -24,9 +24,9 @@ const PATTERNS_TO_GIVE_TEST_ATTRIBUTE: [&str; 6] = [
     "use crate::linked_list::ListNode;",
 ];
 
-pub const SOLUTION_STRUCT_PATTERN: &str = "struct Solution;\n\n";
-pub const USE_TREENODE_PATTERN: &str = "use crate::tree::TreeNode;\n";
-pub const USE_LISTNODE_PATTERN: &str = "use crate::linked_list::ListNode;\n";
+pub const SOLUTION_STRUCT_PATTERN: &str = "struct Solution;";
+pub const USE_TREENODE_PATTERN: &str = "use crate::tree::TreeNode;";
+pub const USE_LISTNODE_PATTERN: &str = "use crate::linked_list::ListNode;";
 
 pub async fn handle_create_command(create: ProblemIdCommand) -> Result<(), ()> {
     println!("Checking if you're premium...");
