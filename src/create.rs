@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use colored::Colorize;
 
 use crate::fetch::{ProblemContent, ProblemJSON};
@@ -45,17 +47,21 @@ pub async fn handle_create_command(create: ProblemIdCommand) -> Result<(), ()> {
         try_fetch_slug(create.problem_id, premium).await?
     };
 
-    println!("Trying to fetch problem content...");
-    let problem_content = fetch::try_fetch_content(&slug).await.map_err(|e| {
+    println!("Trying to fetch problem content & example testcases...");
+
+    let slug = Arc::from(slug);
+    let problem_content = tokio::spawn(fetch::try_fetch_content(Arc::clone(&slug)));
+    let example_testcases = tokio::spawn(fetch::try_fetch_example_testcases(Arc::clone(&slug)));
+
+    let (problem_content, example_testcases) = tokio::try_join!(problem_content, example_testcases)
+        .map_err(|e| println!("error joining the fetch handles: {e}"))?;
+
+    let problem_content = problem_content.map_err(|e| {
         e.log(create.problem_id);
     })?;
-
-    println!("Trying to fetch problem example testcases...");
-    let example_testcases = fetch::try_fetch_example_testcases(&slug)
-        .await
-        .map_err(|e| {
-            e.log(create.problem_id);
-        })?;
+    let example_testcases = example_testcases.map_err(|e| {
+        e.log(create.problem_id);
+    })?;
 
     println!("Trying to generate test module...");
     let test_module = try_create_test_module(&example_testcases, &problem_content.metadata)?;
