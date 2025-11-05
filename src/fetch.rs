@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::{
     args::{FetchCommand, FetchSubcommand},
     create::UNEXPECTED_ERR_HEADER,
@@ -176,8 +178,8 @@ impl PartialEq for FetchContentErr {
     }
 }
 
-pub async fn try_fetch_content(slug: &str) -> Result<ProblemContent, FetchContentErr> {
-    let body = QuestionDataQueryBody::new(slug);
+pub async fn try_fetch_content(slug: Arc<str>) -> Result<ProblemContent, FetchContentErr> {
+    let body = QuestionDataQueryBody::new(&slug);
 
     let response: Json1 = reqwest::Client::new()
         .post(GRAPHQL_URL)
@@ -216,8 +218,8 @@ pub async fn try_fetch_content(slug: &str) -> Result<ProblemContent, FetchConten
     }
 }
 
-pub async fn try_fetch_example_testcases(slug: &str) -> Result<String, FetchContentErr> {
-    let body = ExampleTestcasesQueryBody::new(slug);
+pub async fn try_fetch_example_testcases(slug: Arc<str>) -> Result<String, FetchContentErr> {
+    let body = ExampleTestcasesQueryBody::new(&slug);
 
     let response: Json1Bis = reqwest::Client::new()
         .post(GRAPHQL_URL)
@@ -260,7 +262,7 @@ mod tests_fetch {
     #[ignore]
     async fn rust_unavailable() {
         let problem_slug = "find-a-corresponding-node-of-a-binary-tree-in-a-clone-of-that-tree"; // problem_id = 1379
-        let content = try_fetch_content(problem_slug).await;
+        let content = try_fetch_content(Arc::from(problem_slug)).await;
         assert_eq!(content, Err(FetchContentErr::NotFound));
     }
 
@@ -268,7 +270,7 @@ mod tests_fetch {
     #[ignore]
     async fn test_fetch_example_testcases() {
         let problem_slug = "find-a-corresponding-node-of-a-binary-tree-in-a-clone-of-that-tree";
-        let example_testcases = try_fetch_example_testcases(problem_slug).await;
+        let example_testcases = try_fetch_example_testcases(Arc::from(problem_slug)).await;
         assert_eq!(
             example_testcases.unwrap(),
             "[7,4,3,null,null,6,19]\n3\n[7]\n7\n[8,null,6,null,5,null,4,null,3,null,2,null,1]\n4"
