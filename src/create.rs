@@ -3,11 +3,12 @@ use std::sync::Arc;
 use colored::Colorize;
 
 use crate::fetch::{ProblemContent, ProblemJSON};
+use crate::logger::Log;
 use crate::parse_api::{ProbMetaData, ScalarType};
 use crate::test_module::create_test_module::try_create_test_module;
-use crate::{fetch, read_write};
+use crate::{fetch, read_write, LOGGER};
 
-use crate::args::ProblemIdCommand;
+use crate::args::CreateCommand;
 
 pub const UNEXPECTED_ERR_HEADER: &str = "Unexpected error while";
 const ERR_HEADER: &str = "Error while";
@@ -30,14 +31,16 @@ pub const SOLUTION_STRUCT_PATTERN: &str = "struct Solution;";
 pub const USE_TREENODE_PATTERN: &str = "use crate::tree::TreeNode;";
 pub const USE_LISTNODE_PATTERN: &str = "use crate::linked_list::ListNode;";
 
-pub async fn handle_create_command(create: ProblemIdCommand) -> Result<(), ()> {
-    println!("Checking if you're premium...");
+pub async fn handle_create_command(create: CreateCommand) -> Result<(), ()> {
+    LOGGER.change_verbosity(create.verbose);
+
+    LOGGER.log("Checking if you're premium...");
     let premium = try_checking_if_user_is_premium()?;
 
-    println!("Checking how you'd like to escape rust's dead code warnings...");
+    LOGGER.log("Checking how you'd like to escape rust's dead code warnings...");
     let allow_dead_code = try_checking_if_user_wants_allow_dead_code()?;
 
-    println!("Trying to find slug locally...");
+    LOGGER.log("Trying to find slug locally...");
     let slug_option = read_write::try_read_slug_locally(create.problem_id, premium)?;
 
     let slug = if let Some(slug) = slug_option {
@@ -47,7 +50,7 @@ pub async fn handle_create_command(create: ProblemIdCommand) -> Result<(), ()> {
         try_fetch_slug(create.problem_id, premium).await?
     };
 
-    println!("Trying to fetch problem content & example testcases...");
+    LOGGER.log("Trying to fetch problem content & example testcases...");
 
     let slug = Arc::from(slug);
     let problem_content = tokio::spawn(fetch::try_fetch_content(Arc::clone(&slug)));
@@ -63,10 +66,10 @@ pub async fn handle_create_command(create: ProblemIdCommand) -> Result<(), ()> {
         e.log(create.problem_id);
     })?;
 
-    println!("Trying to generate test module...");
+    LOGGER.log("Trying to generate test module...");
     let test_module = try_create_test_module(&example_testcases, &problem_content.metadata)?;
 
-    println!("Trying to create a solution file...");
+    LOGGER.log("Trying to create a solution file...");
     try_creating_solution_file(
         problem_content,
         &test_module,
@@ -139,7 +142,7 @@ fn try_creating_solution_file(
     let write_file_res = read_write::try_write_solution_template(&file_path, &content); // we check that it doesn't already exist
     match write_file_res {
         Ok(_) => {
-            println!("{} Created {}", "Success!".cyan().bold(), file_path);
+            LOGGER.success(&format!("Created {}", file_path));
             // declares the newly created module file so that it is included in unit tests
             let append_mod_res = read_write::try_append_solution_module(&filename, allow_dead_code);
             if let Err(e) = append_mod_res {

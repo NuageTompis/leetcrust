@@ -1,5 +1,6 @@
 use crate::args::{ConfigCommand, ConfigSubcommand};
-use crate::read_write;
+use crate::logger::Log;
+use crate::{read_write, LOGGER};
 
 pub fn handle_config_command(config: ConfigCommand) {
     let (variable, value) = match config.command {
@@ -27,7 +28,7 @@ pub fn handle_config_command(config: ConfigCommand) {
     let result = read_write::try_update_env_variable(variable, &value);
     match result {
         Ok(_) => {
-            println!("Sucessfully wrote {} to .env", variable);
+            LOGGER.success(&format!("Wrote {} to .env", variable));
         }
         Err(e) => {
             println!("Unexpected error while handling config command: {}.", e);

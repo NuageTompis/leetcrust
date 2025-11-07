@@ -6,7 +6,11 @@ use std::{
 
 use colored::Colorize;
 
-use crate::create::{NO_PREMIUM_ERR, UNEXPECTED_ERR_HEADER};
+use crate::{
+    create::{NO_PREMIUM_ERR, UNEXPECTED_ERR_HEADER},
+    logger::Log,
+    LOGGER,
+};
 
 const ENV_PATH: &str = ".env";
 const SLUGS_PATH: &str = "resources/slugs_and_ids.txt";
@@ -91,7 +95,7 @@ pub fn try_reading_boolean_env_variable(
             false
         }
         LocalReadResult::LineMissing => {
-            println!("{} by running {}", explanation, suggested_command);
+            LOGGER.warning(&format!("{} by running {}", explanation, suggested_command));
             false
         }
         LocalReadResult::LineCorrupted => {

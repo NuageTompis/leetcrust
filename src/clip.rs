@@ -4,11 +4,12 @@ use clipboard::{ClipboardContext, ClipboardProvider};
 use colored::Colorize;
 
 use crate::{
-    args::ProblemIdCommand,
+    args::ClipCommand,
     create::{
         SOLUTION_STRUCT_PATTERN, UNEXPECTED_ERR_HEADER, USE_LISTNODE_PATTERN, USE_TREENODE_PATTERN,
     },
-    read_write,
+    logger::Log,
+    read_write, LOGGER,
 };
 
 const PATTERNS_TO_REMOVE: [&str; 4] = [
@@ -18,8 +19,10 @@ const PATTERNS_TO_REMOVE: [&str; 4] = [
     USE_LISTNODE_PATTERN,
 ];
 
-pub async fn handle_clip_command(clip: ProblemIdCommand) -> Result<(), ()> {
-    println!("Trying to find slug locally...");
+pub async fn handle_clip_command(clip: ClipCommand) -> Result<(), ()> {
+    LOGGER.change_verbosity(clip.verbose);
+
+    LOGGER.log("Trying to find slug locally...");
     // the premium value doesn't matter here
     let slug_option = read_write::try_read_slug_locally(clip.problem_id, true)?;
     let slug = slug_option.ok_or(())?;
@@ -28,7 +31,7 @@ pub async fn handle_clip_command(clip: ProblemIdCommand) -> Result<(), ()> {
     let file_path = format!("./src/solutions/{}.rs", filename);
     let read_file_res = fs::read_to_string(&file_path);
 
-    println!("Reading solution file...");
+    LOGGER.log("Reading solution file...");
     let mut content = match read_file_res {
         Ok(content) => Ok(content),
         Err(e) => {
@@ -56,7 +59,7 @@ pub async fn handle_clip_command(clip: ProblemIdCommand) -> Result<(), ()> {
     content = remove_test_module(content);
     content = content.trim().to_owned();
 
-    println!("Trying to set solution to your clipboard...");
+    LOGGER.log("Trying to set solution to your clipboard...");
     let ctx_res = ClipboardProvider::new();
     let mut ctx: ClipboardContext = match ctx_res {
         Ok(ctx) => ctx,
@@ -79,10 +82,7 @@ pub async fn handle_clip_command(clip: ProblemIdCommand) -> Result<(), ()> {
 
     let _ = ctx.get_contents(); // not reading clipboard content after setting it doesn't seem to work in ubuntu, so this should be kept as-is
 
-    println!(
-        "{} added solution to clipboard!",
-        "Successfully".bold().cyan()
-    );
+    LOGGER.success("Added solution to clipboard!");
 
     Ok(())
 }

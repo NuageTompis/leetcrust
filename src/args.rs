@@ -11,10 +11,10 @@ pub struct LCArgs {
 pub enum MainCommand {
     /// Creates a solution file for the given problem, with default code and test cases
     #[clap(alias = "c")]
-    Create(ProblemIdCommand),
+    Create(CreateCommand),
 
     /// Reads a solution file and puts the relevant content to your clipboard
-    Clip(ProblemIdCommand),
+    Clip(ClipCommand),
 
     /// Configure your information
     Config(ConfigCommand),
@@ -25,9 +25,23 @@ pub enum MainCommand {
 }
 
 #[derive(Args, Debug)]
-pub struct ProblemIdCommand {
+pub struct ClipCommand {
     /// The problem's id
     pub problem_id: u16,
+
+    /// Flag to enable verbose output
+    #[clap(long, short)]
+    pub verbose: bool,
+}
+
+#[derive(Args, Debug)]
+pub struct CreateCommand {
+    /// The problem's id
+    pub problem_id: u16,
+
+    /// Flag to enable verbose output
+    #[clap(long, short)]
+    pub verbose: bool,
 }
 
 #[derive(Args, Debug)]

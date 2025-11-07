@@ -1,5 +1,9 @@
+use std::sync::Mutex;
+
 use args::LCArgs;
 use clap::Parser;
+
+use crate::logger::Logger;
 
 mod args;
 mod clip;
@@ -7,11 +11,14 @@ mod config;
 mod create;
 mod fetch;
 mod linked_list;
+mod logger;
 mod parse_api;
 mod read_write;
 mod solutions;
 mod test_module;
 mod tree;
+
+static LOGGER: Mutex<Logger> = Mutex::new(Logger::new());
 
 #[tokio::main]
 async fn main() {
@@ -27,8 +34,8 @@ async fn main() {
         MC::Fetch(fetch) => {
             fetch::handle_fetch_command(fetch);
         }
-        MC::Clip(problem_id_command) => {
-            let _res = clip::handle_clip_command(problem_id_command).await;
+        MC::Clip(clip) => {
+            let _res = clip::handle_clip_command(clip).await;
         }
     }
 }
