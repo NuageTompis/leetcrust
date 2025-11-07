@@ -1,7 +1,9 @@
 use crate::{
+    logger::Log,
     parse_api::{HasSpecialDataType, ProbMetaData},
     read_write,
     test_module::{class_problem, function_problem},
+    LOGGER,
 };
 
 pub const TEST_FUNCTION_ID_PATTERN: &str = "%EXAMPLE_ID%";
@@ -13,6 +15,7 @@ pub fn try_create_test_module(
     example_testcases: &str,
     metadata: &ProbMetaData,
 ) -> Result<String, ()> {
+    LOGGER.log("Trying to generate test module...");
     // read the mold for the test functions
     let function_mold = read_write::try_read_test_function_mold().map_err(|e| {
         println!("{e}");

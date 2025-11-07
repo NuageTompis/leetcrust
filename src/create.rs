@@ -34,13 +34,10 @@ pub const USE_LISTNODE_PATTERN: &str = "use crate::linked_list::ListNode;";
 pub async fn handle_create_command(create: CreateCommand) -> Result<(), ()> {
     LOGGER.change_verbosity(create.verbose);
 
-    LOGGER.log("Checking if you're premium...");
     let premium = try_checking_if_user_is_premium()?;
 
-    LOGGER.log("Checking how you'd like to escape rust's dead code warnings...");
     let allow_dead_code = try_checking_if_user_wants_allow_dead_code()?;
 
-    LOGGER.log("Trying to find slug locally...");
     let slug_option = read_write::try_read_slug_locally(create.problem_id, premium)?;
 
     let slug = if let Some(slug) = slug_option {
@@ -49,8 +46,6 @@ pub async fn handle_create_command(create: CreateCommand) -> Result<(), ()> {
         println!("Couldn't find slug locally, trying to fetch it...");
         try_fetch_slug(create.problem_id, premium).await?
     };
-
-    LOGGER.log("Trying to fetch problem content & example testcases...");
 
     let slug = Arc::from(slug);
     let problem_content = tokio::spawn(fetch::try_fetch_content(Arc::clone(&slug)));
@@ -66,10 +61,8 @@ pub async fn handle_create_command(create: CreateCommand) -> Result<(), ()> {
         e.log(create.problem_id);
     })?;
 
-    LOGGER.log("Trying to generate test module...");
     let test_module = try_create_test_module(&example_testcases, &problem_content.metadata)?;
 
-    LOGGER.log("Trying to create a solution file...");
     try_creating_solution_file(
         problem_content,
         &test_module,
@@ -111,6 +104,7 @@ async fn try_fetch_slug(problem_id: u16, premium: bool) -> Result<String, ()> {
 
 /// Reads the `.env` file and searches if the user is premium
 fn try_checking_if_user_is_premium() -> Result<bool, ()> {
+    LOGGER.log("Checking if you're premium...");
     read_write::try_reading_boolean_env_variable(
         "premium",
         PREMIUM_COMMAND,
@@ -120,6 +114,7 @@ fn try_checking_if_user_is_premium() -> Result<bool, ()> {
 
 /// Reads the `.env` file and searches if the user is premium
 fn try_checking_if_user_wants_allow_dead_code() -> Result<bool, ()> {
+    LOGGER.log("Checking how you'd like to escape rust's dead code warnings...");
     read_write::try_reading_boolean_env_variable("allow_dead_code", ALLOW_DEAD_CODE_COMMAND, "Please specify if you'd like to escape rust's warnings by using the #[allow(dead_code)] attribute")
 }
 
@@ -130,6 +125,7 @@ fn try_creating_solution_file(
     slug: &str,
     allow_dead_code: bool,
 ) {
+    LOGGER.log("Trying to create a solution file...");
     let mut content = apply_modifications_to_solution_file(
         problem_content.default_code,
         problem_content.metadata,

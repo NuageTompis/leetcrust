@@ -22,16 +22,15 @@ const PATTERNS_TO_REMOVE: [&str; 4] = [
 pub async fn handle_clip_command(clip: ClipCommand) -> Result<(), ()> {
     LOGGER.change_verbosity(clip.verbose);
 
-    LOGGER.log("Trying to find slug locally...");
     // the premium value doesn't matter here
     let slug_option = read_write::try_read_slug_locally(clip.problem_id, true)?;
     let slug = slug_option.ok_or(())?;
 
     let filename = format!("s{}_{}", clip.problem_id, slug).replace('-', "_");
     let file_path = format!("./src/solutions/{}.rs", filename);
-    let read_file_res = fs::read_to_string(&file_path);
 
     LOGGER.log("Reading solution file...");
+    let read_file_res = fs::read_to_string(&file_path);
     let mut content = match read_file_res {
         Ok(content) => Ok(content),
         Err(e) => {

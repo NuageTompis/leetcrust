@@ -134,6 +134,7 @@ pub fn try_read_test_module_mold() -> Result<String, io::Error> {
 /// * `problem_id` - The (front-end) id of the problem
 /// * `premium` - The boolean describing if the user declared himself as premium or not
 pub fn try_read_slug_locally(problem_id: u16, premium: bool) -> Result<Option<String>, ()> {
+    LOGGER.log("Trying to find slug locally...");
     let slug_read_res: LocalReadResult<(String, String)> =
         try_read_variable(&problem_id.to_string(), ',');
     let slug = match slug_read_res {

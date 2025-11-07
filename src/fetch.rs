@@ -3,7 +3,9 @@ use std::sync::Arc;
 use crate::{
     args::{FetchCommand, FetchSubcommand},
     create::UNEXPECTED_ERR_HEADER,
+    logger::Log,
     parse_api::ProbMetaData,
+    LOGGER,
 };
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
@@ -179,6 +181,7 @@ impl PartialEq for FetchContentErr {
 }
 
 pub async fn try_fetch_content(slug: Arc<str>) -> Result<ProblemContent, FetchContentErr> {
+    LOGGER.log("Trying to fetch problem content...");
     let body = QuestionDataQueryBody::new(&slug);
 
     let response: Json1 = reqwest::Client::new()
@@ -219,6 +222,7 @@ pub async fn try_fetch_content(slug: Arc<str>) -> Result<ProblemContent, FetchCo
 }
 
 pub async fn try_fetch_example_testcases(slug: Arc<str>) -> Result<String, FetchContentErr> {
+    LOGGER.log("Trying to fetch example testcases...");
     let body = ExampleTestcasesQueryBody::new(&slug);
 
     let response: Json1Bis = reqwest::Client::new()
