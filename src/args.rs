@@ -103,3 +103,38 @@ pub struct AllowDeadCodeCommand {
     /// 0 or 1
     pub allow_dead_code: u8,
 }
+
+pub trait GivenBooleanValue {
+    fn get_name(&self) -> String;
+    fn get_value(&self) -> u8;
+    fn display_wrong_value(&self) {
+        println!(
+            "The {} value {} is not valid, it should be either 0 or 1",
+            self.get_name(),
+            self.get_value()
+        )
+    }
+    fn is_valid(&self) -> bool {
+        self.get_value() <= 1
+    }
+}
+
+impl GivenBooleanValue for PremiumCommand {
+    fn get_name(&self) -> String {
+        String::from("premium")
+    }
+
+    fn get_value(&self) -> u8 {
+        self.premium
+    }
+}
+
+impl GivenBooleanValue for AllowDeadCodeCommand {
+    fn get_name(&self) -> String {
+        String::from("allow_dead_code")
+    }
+
+    fn get_value(&self) -> u8 {
+        self.allow_dead_code
+    }
+}
