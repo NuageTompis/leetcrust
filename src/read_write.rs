@@ -25,7 +25,7 @@ pub enum LocalReadResult<T> {
     FileMissing,
     LineMissing,
     LineCorrupted,
-    UnexpectedError,
+    Io(io::Error),
 }
 
 pub fn try_update_env_variable(variable: &str, value: &str) -> Result<(), io::Error> {
@@ -105,9 +105,9 @@ pub fn try_reading_boolean_env_variable(
             );
             false
         }
-        LocalReadResult::UnexpectedError => {
+        LocalReadResult::Io(e) => {
             println!(
-                "{} trying to read {} variable in .env",
+                "{} trying to read {} variable in .env: {e}",
                 UNEXPECTED_ERR_HEADER.red().bold(),
                 variable_name
             );
@@ -174,9 +174,9 @@ pub fn try_read_slug_locally(problem_id: u16, premium: bool) -> Result<Option<St
             println!("We did find problem {} locally but the line seems to be corrupted. Starting api call...", problem_id);
             None
         }
-        LocalReadResult::UnexpectedError => {
+        LocalReadResult::Io(e) => {
             println!(
-                "{} reading slug locally.",
+                "{} reading slug locally: {e}.",
                 UNEXPECTED_ERR_HEADER.red().bold()
             );
             None
@@ -268,7 +268,7 @@ pub fn try_read_variable<T: ReadVarRes>(variable: &str, separator: char) -> Loca
             if e.kind() == io::ErrorKind::NotFound {
                 LocalReadResult::FileMissing
             } else {
-                LocalReadResult::UnexpectedError
+                LocalReadResult::Io(e)
             }
         }
     }
