@@ -43,7 +43,7 @@ pub async fn handle_create_command(create: CreateCommand) -> Result<(), ()> {
     let slug = if let Some(slug) = slug_option {
         slug
     } else {
-        println!("Couldn't find slug locally, trying to fetch it...");
+        LOGGER.log("Couldn't find slug locally, trying to fetch it...");
         try_fetch_slug(create.problem_id, premium).await?
     };
 
@@ -156,15 +156,17 @@ fn try_creating_solution_file(
 }
 
 fn apply_modifications_to_solution_file(
-    content: String,
+    mut content: String,
     metadata: ProbMetaData,
     allow_dead_code: bool,
 ) -> String {
-    let mut content = if let ProbMetaData::Function(_) = metadata {
-        format!("{}{}", SOLUTION_STRUCT_PATTERN, content)
-    } else {
-        content
-    };
+    fn insert_front(s: &mut String, pattern: &str) {
+        s.insert_str(0, pattern);
+    }
+
+    if let ProbMetaData::Function(_) = metadata {
+        insert_front(&mut content, SOLUTION_STRUCT_PATTERN);
+    }
 
     if let ProbMetaData::Function(function_metadata) = metadata {
         let has_tree_node = function_metadata
@@ -172,14 +174,14 @@ fn apply_modifications_to_solution_file(
             .iter()
             .any(|param| param._type.scalar_type == ScalarType::TreeNode);
         if has_tree_node {
-            content = format!("{}{}", USE_TREENODE_PATTERN, content)
+            insert_front(&mut content, USE_TREENODE_PATTERN);
         }
         let has_list_node = function_metadata
             .params
             .iter()
             .any(|param| param._type.scalar_type == ScalarType::ListNode);
         if has_list_node {
-            content = format!("{}{}", USE_LISTNODE_PATTERN, content)
+            insert_front(&mut content, USE_LISTNODE_PATTERN);
         }
     }
 

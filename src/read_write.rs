@@ -249,18 +249,16 @@ impl ReadVarRes for (String, String) {
 }
 
 pub fn try_read_variable<T: ReadVarRes>(variable: &str, separator: char) -> LocalReadResult<T> {
+    let pattern = format!("{}{}", variable, separator);
     match fs::read_to_string(T::file_path()) {
         Ok(content) => {
             for line in content.lines() {
-                let ndx = line.find(separator);
-                if let Some(ndx) = ndx {
-                    if &line[..ndx] == variable {
-                        let parts: Vec<&str> = line.split(separator).collect();
-                        if let Some(parsed) = T::parse(&parts) {
-                            return LocalReadResult::Found(parsed);
-                        } else {
-                            return LocalReadResult::LineCorrupted;
-                        }
+                if line.starts_with(&pattern) {
+                    let parts: Vec<&str> = line.split(separator).collect();
+                    if let Some(parsed) = T::parse(&parts) {
+                        return LocalReadResult::Found(parsed);
+                    } else {
+                        return LocalReadResult::LineCorrupted;
                     }
                 }
             }
